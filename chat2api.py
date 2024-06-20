@@ -1,4 +1,5 @@
 import asyncio
+import json
 import types
 import warnings
 
@@ -64,6 +65,8 @@ async def send_conversation(request: Request, req_token: str = Depends(oauth2_sc
         request_data = await request.json()
     except Exception:
         raise HTTPException(status_code=400, detail={"error": "Invalid JSON body"})
+    
+    logger.info(f"Request data: {json.dumps(json.loads(request_data), indent=2)}")
 
     chat_service = await async_retry(to_send_conversation, request_data, req_token)
     try:

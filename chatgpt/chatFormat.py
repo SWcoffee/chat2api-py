@@ -384,6 +384,7 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
             "metadata": metadata
         }
         chat_messages.append(chat_message)
+    logger.info(f"chat_messages: {chat_messages}")
     text_tokens = await num_tokens_from_messages(api_messages, service.resp_model)
     prompt_tokens = text_tokens + file_tokens
     return chat_messages, prompt_tokens
