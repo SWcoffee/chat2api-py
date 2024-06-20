@@ -324,6 +324,7 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
             if isinstance(content, str):
                 content = format_messages_with_url(content)
         if isinstance(content, list):
+            print("list")
             parts = []
             attachments = []
             content_type = "multimodal_text"
@@ -374,6 +375,7 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
                 "attachments": attachments
             }
         else:
+            print("not list")
             content_type = "text"
             parts = [content]
             metadata = {}
@@ -384,11 +386,31 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
             "metadata": metadata
         }
         chat_messages.append(chat_message)
-    temp_message = ",".join([json.dumps(i) for i in chat_messages])
-    chat_messages = [{
-        "messages": temp_message,
-    }]
     
+    
+    temp_message = ""
+    for message in chat_messages:
+        if message.get("author", {}).get("role") == "user":
+            user_message = message.get("content", {}).get("parts", [])
+            temp_message += "user: " + ",".join(user_message) + "\n"
+        elif message.get("author", {}).get("role") == "assistant":
+            assistant_message = message.get("content", {}).get("parts", [])
+            temp_message += "assistant: " + ",".join(assistant_message) + "\n"
+        elif message.get("author", {}).get("role") == "system":
+            system_message = message.get("content", {}).get("parts", [])
+            temp_message += "system: " + ",".join(system_message) + "\n"
+        else:
+            continue
+
+    new_messages= [{
+        "id": f"{uuid.uuid4()}",
+        "author": {"role": "user"},
+        "content": {"content_type": "text", "parts": [temp_message]},
+        "metadata": {}
+    }]
+    chat_messages = new_messages
+    
+    print("chat_messages: ", chat_messages)
     logger.info(f"chat_messages: {chat_messages}")
     text_tokens = await num_tokens_from_messages(api_messages, service.resp_model)
     prompt_tokens = text_tokens + file_tokens
