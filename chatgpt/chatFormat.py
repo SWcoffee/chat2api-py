@@ -324,7 +324,6 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
             if isinstance(content, str):
                 content = format_messages_with_url(content)
         if isinstance(content, list):
-            print("list")
             parts = []
             attachments = []
             content_type = "multimodal_text"
@@ -375,7 +374,6 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
                 "attachments": attachments
             }
         else:
-            print("not list")
             content_type = "text"
             parts = [content]
             metadata = {}
