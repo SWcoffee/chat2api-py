@@ -392,12 +392,18 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
     for message in chat_messages:
         if message.get("author", {}).get("role") == "user":
             user_message = message.get("content", {}).get("parts", [])
+            if "You are ChatGPT" in user_message[0]:
+                continue
             temp_message += "user: " + ",".join(user_message) + "\n"
         elif message.get("author", {}).get("role") == "assistant":
             assistant_message = message.get("content", {}).get("parts", [])
+            if "You are ChatGPT" in assistant_message[0]:
+                continue
             temp_message += "assistant: " + ",".join(assistant_message) + "\n"
         elif message.get("author", {}).get("role") == "system":
             system_message = message.get("content", {}).get("parts", [])
+            if "You are ChatGPT" in system_message[0]:
+                continue
             temp_message += "system: " + ",".join(system_message) + "\n"
         else:
             continue
