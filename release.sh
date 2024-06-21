@@ -11,7 +11,7 @@ IMAGE_NAME="chat2api"
 REMOTE_REPO="swcoffee"
 
 # 构建Docker镜像
-docker build -t ${IMAGE_NAME}:${DATE_TAG} .
+docker build --platform ${TARGET_PLATFORM} -t ${IMAGE_NAME}:${DATE_TAG} .
 
 # 登录Docker远程仓库（如果需要）
 # docker login ${REMOTE_REPO}
