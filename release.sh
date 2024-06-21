@@ -10,6 +10,30 @@ DATE_TAG=$(date +"%Y%m%d")
 IMAGE_NAME="chat2api"
 REMOTE_REPO="swcoffee"
 
+# 动态获取当前系统的架构平台
+ARCH=$(uname -m)
+
+case $ARCH in
+    x86_64)
+        TARGET_PLATFORM="linux/amd64"
+        ;;
+    aarch64)
+        TARGET_PLATFORM="linux/arm64"
+        ;;
+    armv7l)
+        TARGET_PLATFORM="linux/arm/v7"
+        ;;
+    armv6l)
+        TARGET_PLATFORM="linux/arm/v6"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
+
+echo "Building for platform: ${TARGET_PLATFORM}"
+
 # 构建Docker镜像
 docker build --platform ${TARGET_PLATFORM} -t ${IMAGE_NAME}:${DATE_TAG} .
 
