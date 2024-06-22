@@ -103,6 +103,7 @@ async def chatgpt_reverse_proxy(request: Request, path: str):
         raise HTTPException(status_code=404, detail="Gateway is disabled")
     try:
         if "gen_title" in path:
+            logger.info("gen_title:"+path)
             conversion_id =path.split("/")[-1]
             if conversion_id in gen_title.keys():
                 data = {
