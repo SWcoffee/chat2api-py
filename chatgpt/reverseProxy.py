@@ -1,4 +1,5 @@
 import random
+import warnings
 
 from fastapi import Request, HTTPException
 from fastapi.responses import StreamingResponse, Response
@@ -6,6 +7,7 @@ from starlette.background import BackgroundTask
 
 from utils.Client import Client
 from utils.config import chatgpt_base_url_list, proxy_url_list, enable_gateway
+from curl_cffi.requests.errors import RequestsError
 
 headers_reject_list = [
     "x-real-ip",
@@ -57,6 +59,32 @@ headers_reject_list = [
     "cf-ray",
     "cf-visitor",
 ]
+
+async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
+    """
+    iterate streaming content chunk by chunk in bytes.
+    """
+    if chunk_size:
+        warnings.warn("chunk_size is ignored, there is no way to tell curl that.")
+    if decode_unicode:
+        raise NotImplementedError()
+
+    assert r.queue and r.curl, "stream mode is not enabled."
+
+    while True:
+        chunk = await r.queue.get()
+
+        # re-raise the exception if something wrong happened.
+        if isinstance(chunk, RequestsError):
+            await r.aclose()
+            raise chunk
+
+        # end of stream.
+        if chunk is None:
+            await r.aclose()
+            return
+        print(chunk)
+        yield chunk
 
 
 async def chatgpt_reverse_proxy(request: Request, path: str):
@@ -126,8 +154,10 @@ async def chatgpt_reverse_proxy(request: Request, path: str):
                                 .replace("cdn.oaistatic.com", origin_host)
                                 .replace("https", petrol)}, background=background)
             elif 'stream' in r.headers.get("content-type", ""):
-                return StreamingResponse(r.aiter_content(), media_type=r.headers.get("content-type", ""),
+                return StreamingResponse(log_aiter_content(r), media_type=r.headers.get("content-type", ""),
                                          background=background)
+                # return StreamingResponse(r.aiter_content(), media_type=r.headers.get("content-type", ""),
+                #                          background=background)
             else:
                 if "/conversation" in path or "/register-websocket" in path:
                     response = Response(content=(await r.atext()), media_type=r.headers.get("content-type"),
