@@ -2,10 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY . /app
+# 仅复制requirements.txt，安装依赖
+COPY requirements.txt /app/
 
-# RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install  -r requirements.txt
+# 安装依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制其他代码文件
+COPY . /app
 
 EXPOSE 5005
 
