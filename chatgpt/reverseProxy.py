@@ -1,4 +1,5 @@
 import copy
+import json
 import random
 import warnings
 
@@ -10,6 +11,7 @@ from utils.Client import Client
 from utils.config import chatgpt_base_url_list, proxy_url_list, enable_gateway
 from curl_cffi.requests.errors import RequestsError
 from utils.Logger import logger
+from utils.title import gen_title
 
 headers_reject_list = [
     "x-real-ip",
@@ -85,8 +87,14 @@ async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
         if chunk is None:
             await r.aclose()
             return
+        # save title
         new_chunk = copy.deepcopy(chunk)
-        logger.info("chunk:"+new_chunk.decode("utf-8"))
+        if "title_generation" in new_chunk:
+            data = json.loads(new_chunk)
+            conversation_id = data["data"]["conversation_id"]
+            title = data["data"]["title"]
+            gen_title[conversation_id] = title
+        # logger.info("chunk:"+new_chunk.decode("utf-8"))
         yield chunk
 
 
@@ -94,6 +102,19 @@ async def chatgpt_reverse_proxy(request: Request, path: str):
     if not enable_gateway:
         raise HTTPException(status_code=404, detail="Gateway is disabled")
     try:
+        if "gen_title" in path:
+            conversion_id =path.split("/")[-1]
+            if conversion_id in gen_title.keys():
+                data = {
+                    "title":gen_title.get(conversion_id),
+                    "conversation_id":conversion_id
+                }
+                return Response(content=json.dumps(data), media_type="application/json",
+                                status_code=200, background=None)
+            else :
+                return Response(content=json.dumps({"title":"user request"}), media_type="application/json",
+                                status_code=200, background=None)
+            
         origin_host = request.url.netloc
         if ":" in origin_host:
             petrol = "http"
