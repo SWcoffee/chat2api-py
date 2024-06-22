@@ -91,6 +91,8 @@ async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
         new_chunk = copy.deepcopy(chunk)
         new_chunk = new_chunk.decode("utf-8")
         if "title_generation" in new_chunk:
+            new_chunk = new_chunk.replace("data:","")
+            logger.info("new_chunk:"+new_chunk)
             data = json.loads(new_chunk)
             conversation_id = data["data"]["conversation_id"]
             title = data["data"]["title"]
