@@ -85,7 +85,7 @@ async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
             await r.aclose()
             return
         print(chunk)
-        logger.info("chunk:",chunk)
+        logger.info("chunk:"+chunk)
         yield chunk
 
 
