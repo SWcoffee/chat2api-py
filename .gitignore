@@ -4,12 +4,3 @@
 /.idea/
 /tmp/
 /data/
-
-curl --location 'http://127.0.0.1:5005/v1/chat/completions' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer coffee666' \
---data '{
-     "model": "gpt-3.5-turbo",
-     "messages": [{"role": "user", "content": "Say this is a test!"}],
-     "stream": true
-   }'

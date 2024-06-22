@@ -60,6 +60,7 @@ headers_reject_list = [
 
 
 async def chatgpt_reverse_proxy(request: Request, path: str):
+    enable_gateway = False
     if not enable_gateway:
         raise HTTPException(status_code=404, detail="Gateway is disabled")
     try:
