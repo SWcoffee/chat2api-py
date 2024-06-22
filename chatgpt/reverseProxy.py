@@ -1,3 +1,4 @@
+import copy
 import random
 import warnings
 
@@ -84,8 +85,8 @@ async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
         if chunk is None:
             await r.aclose()
             return
-        print(chunk)
-        logger.info("chunk:"+chunk)
+        new_chunk = copy.deepcopy(chunk)
+        logger.info("chunk:"+new_chunk.decode("utf-8"))
         yield chunk
 
 
