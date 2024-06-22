@@ -8,6 +8,7 @@ from starlette.background import BackgroundTask
 from utils.Client import Client
 from utils.config import chatgpt_base_url_list, proxy_url_list, enable_gateway
 from curl_cffi.requests.errors import RequestsError
+from utils.Logger import logger
 
 headers_reject_list = [
     "x-real-ip",
@@ -84,6 +85,7 @@ async def log_aiter_content(r, chunk_size=None, decode_unicode=False):
             await r.aclose()
             return
         print(chunk)
+        logger.info("chunk:",chunk)
         yield chunk
 
 
