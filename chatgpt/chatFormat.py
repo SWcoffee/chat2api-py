@@ -392,17 +392,17 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
             user_message = message.get("content", {}).get("parts", [])
             if "You are ChatGPT" in user_message[0]:
                 continue
-            temp_message += "user: " + ",".join(user_message) + "\n"
+            temp_message += "user: " + ",".join(user_message) + "\n\n"
         elif message.get("author", {}).get("role") == "assistant":
             assistant_message = message.get("content", {}).get("parts", [])
             if "You are ChatGPT" in assistant_message[0]:
                 continue
-            temp_message += "assistant: " + ",".join(assistant_message) + "\n"
+            temp_message += "assistant: " + ",".join(assistant_message) + "\n\n"
         elif message.get("author", {}).get("role") == "system":
             system_message = message.get("content", {}).get("parts", [])
             if "You are ChatGPT" in system_message[0]:
                 continue
-            temp_message += "system: " + ",".join(system_message) + "\n"
+            temp_message += "system: " + ",".join(system_message) + "\n\n"
         else:
             continue
 
@@ -410,12 +410,12 @@ async def api_messages_to_chat(service, api_messages, upload_by_url=False):
         "id": f"{uuid.uuid4()}",
         "author": {"role": "user"},
         "content": {"content_type": "text", "parts": [temp_message]},
-        "metadata": {}
+        "metadata": chat_messages[-1].get("metadata", {})
     }]
     chat_messages = new_messages
     
-    print("chat_messages: ", chat_messages)
-    logger.info(f"chat_messages: {chat_messages}")
+    # print("chat_messages: ", chat_messages)
+    # logger.info(f"chat_messages: {chat_messages}")
     text_tokens = await num_tokens_from_messages(api_messages, service.resp_model)
     prompt_tokens = text_tokens + file_tokens
     return chat_messages, prompt_tokens
