@@ -5,6 +5,7 @@ import ua_generator
 import random
 
 from utils.Logger import logger
+from utils.config import proxy_url_list
 
 DATA_FOLDER = "data"
 TOKENS_FILE = os.path.join(DATA_FOLDER, "token.txt")
@@ -75,21 +76,26 @@ if os.path.exists(USER_AGENTS_FILE):
             user_agent_map = json.load(f)
         except json.JSONDecodeError:
             user_agent_map = {}
-    # token数量变化时，更新ua
-    if len(user_agent_map.keys()) != len(token_list):
-        new_tokens = list(set(token_list) - user_agent_map.keys())
-        for token in new_tokens:
-            ua = ua_generator.generate(device='desktop', browser=('chrome', 'edge'), platform=('windows', 'macos'))
-            ua_dict = {
-                "user-agent": ua.text,
-                "sec-ch-ua-platform": ua.platform,
-                "sec-ch-ua": ua.ch.brands,
-                "sec-ch-ua-mobile": ua.ch.mobile,
-                "impersonate": random.choice(impersonate_list),
-            }
-            user_agent_map[token] = ua_dict
-        with open(USER_AGENTS_FILE, "w", encoding="utf-8") as f:
-            f.write(json.dumps(user_agent_map, indent=4))
+    # 对比token_list和user_agent_map，如果token_list中有而user_agent_map中没有，则生成新的ua
+    new_tokens = list(set(token_list) - user_agent_map.keys())
+    for token in new_tokens:
+        ua = ua_generator.generate(device='desktop', browser=('chrome', 'edge'), platform=('windows', 'macos'))
+        ua_dict = {
+            "user-agent": ua.text,
+            "sec-ch-ua-platform": ua.platform,
+            "sec-ch-ua": ua.ch.brands,
+            "sec-ch-ua-mobile": ua.ch.mobile,
+            "impersonate": random.choice(impersonate_list),
+            "proxy_url": random.choice(proxy_url_list) if proxy_url_list else None,
+        }
+        user_agent_map[token] = ua_dict
+    # 更新proxy_url
+    # 检查所有的ua是否有proxy_url是否存在于proxy_url_list中，如果不存在则重新生成
+    for token, ua_dict in user_agent_map.items():
+        if "proxy_url" in ua_dict and ua_dict["proxy_url"] not in proxy_url_list:
+            ua_dict["proxy_url"] = random.choice(proxy_url_list) if proxy_url_list else None
+    with open(USER_AGENTS_FILE, "w", encoding="utf-8") as f:
+        f.write(json.dumps(user_agent_map, indent=4))
 else:
     for token in token_list:
         ua = ua_generator.generate(device='desktop', browser=('chrome', 'edge'), platform=('windows', 'macos'))
@@ -99,6 +105,7 @@ else:
             "sec-ch-ua": ua.ch.brands,
             "sec-ch-ua-mobile": ua.ch.mobile,
             "impersonate": random.choice(impersonate_list),
+            "proxy_url": random.choice(proxy_url_list) if proxy_url_list else None,
         }
         user_agent_map[token] = ua_dict
     with open(USER_AGENTS_FILE, "w", encoding="utf-8") as f:

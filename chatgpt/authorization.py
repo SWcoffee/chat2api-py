@@ -9,7 +9,7 @@ from fastapi import HTTPException
 import chatgpt.globals as globals
 from chatgpt.refreshToken import rt2ac
 from utils.Logger import logger
-from utils.config import authorization_list, random_token
+from utils.config import authorization_list, random_token, proxy_url_list
 
 os.environ['PYTHONHASHSEED'] = '0'
 random.seed(0)
@@ -51,6 +51,7 @@ def get_ua(req_token):
                 "sec-ch-ua": ua.ch.brands,
                 "sec-ch-ua-mobile": ua.ch.mobile,
                 "impersonate": random.choice(globals.impersonate_list),
+                "proxy_url": random.choice(proxy_url_list) if proxy_url_list else None,
             }
         else:
             ua = ua_generator.generate(device='desktop', browser=('chrome', 'edge'), platform=('windows', 'macos'))
@@ -60,6 +61,7 @@ def get_ua(req_token):
                 "sec-ch-ua": ua.ch.brands,
                 "sec-ch-ua-mobile": ua.ch.mobile,
                 "impersonate": random.choice(globals.impersonate_list),
+                "proxy_url": random.choice(proxy_url_list) if proxy_url_list else None,
             }
             globals.user_agent_map[req_token] = user_agent
             with open(globals.USER_AGENTS_FILE, "w", encoding="utf-8") as f:
